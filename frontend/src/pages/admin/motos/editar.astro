@@ -1,0 +1,45 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro'
+import MotoForm from '../../../components/motos/MotoForm.astro'
+---
+<AdminLayout>
+  <section class="container-power py-14">
+    <p class="font-display text-lg uppercase tracking-widest text-power-deep">Catálogo</p>
+    <h1 class="text-6xl">Editar moto</h1>
+    <div id="edit-loading" class="py-8 text-gray-600">Cargando información...</div>
+    <p id="edit-error" class="hidden rounded-lg bg-red-50 p-4 text-red-800" role="alert"></p>
+    <div id="edit-form" class="hidden"><MotoForm /></div>
+  </section>
+</AdminLayout>
+<script>
+  import { getMotos, updateMoto } from '../../../lib/api/motos.api'
+  import { motoSchema } from '../../../schemas/moto.schema'
+  import { isAuthenticated } from '../../../lib/auth/storage'
+
+  if (!isAuthenticated()) window.location.href = '/login'
+  const id = Number(new URLSearchParams(window.location.search).get('id'))
+  const loading = document.querySelector('#edit-loading')
+  const error = document.querySelector('#edit-error')
+  const formWrapper = document.querySelector('#edit-form')
+
+  try {
+    const result = await getMotos()
+    const moto = result.data.find((item) => item.identificador === id)
+    if (!moto) throw new Error('La moto no existe')
+    const form = document.querySelector<HTMLFormElement>('#moto-form')
+    for (const [name, value] of Object.entries(moto)) {
+      const field = form?.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null
+      if (field) field.value = String(value)
+    }
+    loading?.classList.add('hidden'); formWrapper?.classList.remove('hidden')
+    form?.addEventListener('submit', async (event) => {
+      event.preventDefault(); error?.classList.add('hidden')
+      const input = motoSchema.safeParse(Object.fromEntries(new FormData(form).entries()))
+      if (!input.success) { error!.textContent = input.error.issues[0]?.message || 'Revisa los datos'; error?.classList.remove('hidden'); return }
+      try { await updateMoto(id, input.data); window.location.href = '/admin' }
+      catch (exception) { error!.textContent = exception instanceof Error ? exception.message : 'No se pudo actualizar'; error?.classList.remove('hidden') }
+    })
+  } catch (exception) {
+    loading?.classList.add('hidden'); error!.textContent = exception instanceof Error ? exception.message : 'No se pudo cargar la moto'; error?.classList.remove('hidden')
+  }
+</script>

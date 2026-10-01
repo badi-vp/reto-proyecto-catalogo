@@ -1,0 +1,19 @@
+<div class="border-b border-gray-200 bg-power-surface">
+  <div class="container-power flex flex-wrap items-center justify-between gap-3 py-3">
+    <p class="m-0 font-display text-xl font-bold">Panel de administración</p>
+    <div class="flex items-center gap-4 text-sm">
+      <span id="admin-user" class="text-gray-600"></span>
+      <button id="logout-button" class="font-semibold text-power-deep hover:text-black">Cerrar sesión</button>
+    </div>
+  </div>
+</div>
+<script>
+  import { getCurrentUser, clearSession } from '../../lib/auth/storage'
+  import { logout } from '../../lib/api/auth.api'
+  const user = document.querySelector('#admin-user')
+  const button = document.querySelector('#logout-button')
+  if (user) user.textContent = getCurrentUser() || ''
+  button?.addEventListener('click', async () => {
+    try { await logout() } finally { clearSession(); window.location.href = '/login' }
+  })
+</script>

@@ -1,0 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Saira+Condensed:wght@600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: light; }
+html { scroll-behavior: smooth; }
+body { @apply m-0 bg-white font-body text-power-ink antialiased; }
+h1, h2, h3 { @apply font-display font-bold tracking-tight text-black; }
+button, input, select, textarea { font: inherit; }
+:focus-visible { @apply outline-2 outline-offset-2 outline-power-red; }
+.container-power { @apply mx-auto w-[calc(100%-2rem)] max-w-7xl md:w-[calc(100%-3rem)] xl:w-[calc(100%-4rem)]; }
+.btn-primary { @apply inline-flex min-h-12 items-center justify-center rounded-[.625rem] bg-power-red px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-power-deep disabled:cursor-not-allowed disabled:bg-gray-300; }
+.btn-secondary { @apply inline-flex min-h-12 items-center justify-center rounded-[.625rem] border border-gray-400 bg-white px-6 py-3 font-semibold text-power-ink transition hover:bg-power-surface; }
+.field { @apply min-h-12 w-full rounded-[.625rem] border border-gray-400 bg-white px-3 py-2 text-power-ink outline-none transition focus:border-power-red focus:ring-2 focus:ring-red-100; }
+.field-error { @apply border-red-700; }

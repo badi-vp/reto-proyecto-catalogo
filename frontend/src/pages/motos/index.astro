@@ -1,0 +1,51 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro'
+import { CATEGORIAS } from '../../types/moto'
+---
+<MainLayout title="Catálogo de motos · Sabino's MotorCycles">
+  <section class="bg-power-surface py-14">
+    <div class="container-power">
+      <p class="font-display text-lg uppercase tracking-widest text-power-deep">Catálogo</p>
+      <h1 class="text-6xl">Encuentra tu modelo</h1>
+      <form id="filters-form" class="mt-8 flex flex-wrap items-end gap-4 rounded-2xl bg-white p-5 shadow-card">
+        <label class="grid min-w-64 flex-1 gap-2 font-semibold">Categoría
+          <select class="field" name="categoria"><option value="">Todas las categorías</option>{CATEGORIAS.map((categoria) => <option value={categoria}>{categoria}</option>)}</select>
+        </label>
+        <button class="btn-primary" type="submit">Aplicar filtros</button>
+        <button class="btn-secondary" id="clear-filters" type="button">Limpiar</button>
+      </form>
+    </div>
+  </section>
+  <section class="container-power py-14">
+    <div class="flex items-end justify-between"><h2 class="text-5xl">Motos Power</h2><span id="total-motos" class="text-gray-600"></span></div>
+    <p id="catalog-error" class="hidden rounded-lg bg-red-50 p-4 text-red-800" role="alert"></p>
+    <p id="catalog-loading" class="py-10 text-gray-600">Cargando catálogo...</p>
+    <div id="moto-grid" class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3"></div>
+    <p id="catalog-empty" class="hidden py-10 text-gray-600">No encontramos motos con esos filtros.</p>
+  </section>
+</MainLayout>
+<script>
+  import { getMotos } from '../../lib/api/motos.api'
+  import type { Categoria } from '../../types/moto'
+  const form = document.querySelector<HTMLFormElement>('#filters-form')
+  const grid = document.querySelector('#moto-grid')
+  const loading = document.querySelector('#catalog-loading')
+  const empty = document.querySelector('#catalog-empty')
+  const error = document.querySelector('#catalog-error')
+  const total = document.querySelector('#total-motos')
+  const render = async (formData?: FormData) => {
+    loading?.classList.remove('hidden'); empty?.classList.add('hidden'); error?.classList.add('hidden')
+    const filters = formData ? Object.fromEntries(formData.entries()) : {}
+    try {
+      const selectedCategory = String(filters.categoria || '')
+      const result = await getMotos({ categoria: selectedCategory ? selectedCategory as Categoria : undefined })
+      if (grid) grid.innerHTML = result.data.map((moto) => `<article class="overflow-hidden rounded-sm bg-gradient-to-br from-[#302e2c] to-[#121212] text-white shadow-card"><img class="aspect-[4/3] w-full object-contain p-2" src="${moto.imagenLink}" alt="${moto.modelo}" loading="lazy"><div class="border-t-[3px] border-power-red p-5"><h3 class="m-0 font-display text-3xl">${moto.modelo}</h3><p class="m-0 text-sm text-[#9A948F]">${moto.categoria} · ${moto.cilindrada} cc</p><p class="mt-4 font-display text-5xl font-bold">Bs ${moto.precio.toLocaleString('es-BO')}</p><p class="m-0 text-sm text-[#B5AFAA]">Precio contado · Stock: ${moto.stock}</p></div></article>`).join('')
+      total!.textContent = `${result.total} modelos`
+      if (!result.data.length) empty?.classList.remove('hidden')
+    } catch (exception) { error!.textContent = exception instanceof Error ? exception.message : 'No se pudo cargar el catálogo'; error?.classList.remove('hidden') }
+    finally { loading?.classList.add('hidden') }
+  }
+  form?.addEventListener('submit', (event) => { event.preventDefault(); render(new FormData(form)) })
+  document.querySelector('#clear-filters')?.addEventListener('click', () => { form?.reset(); render() })
+  render()
+</script>

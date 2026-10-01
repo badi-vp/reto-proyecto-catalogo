@@ -1,0 +1,92 @@
+---
+import MainLayout from '../layouts/MainLayout.astro'
+---
+<MainLayout>
+  <section class="hero-home relative isolate overflow-hidden bg-[#020812] text-white">
+    <div class="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_center,_#12314a_0%,_#061421_42%,_#020812_78%)]"></div>
+    <div class="absolute inset-x-0 bottom-0 -z-10 h-2/3 bg-gradient-to-t from-[#020812] via-transparent to-transparent"></div>
+    <div class="container-power grid min-h-[720px] items-center gap-4 py-12 md:grid-cols-[minmax(180px,1fr)_minmax(360px,1.25fr)_minmax(180px,1fr)] md:gap-8 md:py-16">
+      <div class="relative order-2 h-[280px] overflow-hidden rounded-[2rem] border border-white/10 shadow-2xl shadow-black/40 md:order-1 md:h-[540px]">
+        <img class="h-full w-full object-cover object-center" src="/images/hero-left.jpg" alt="Motociclista en una ciudad iluminada" />
+        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#020812]/90"></div>
+        <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#020812]/80 to-transparent"></div>
+      </div>
+
+      <div class="relative z-10 order-1 text-center md:order-2">
+        <p class="mb-3 font-display text-xl uppercase tracking-widest text-power-red">Sabino's MotorCycles</p>
+        <h1 class="mx-auto max-w-2xl text-5xl leading-none text-white sm:text-6xl md:text-7xl">Tu próxima moto empieza aquí.</h1>
+        <p class="mx-auto mt-6 max-w-xl text-lg text-gray-300">Adquiere tu moto en SABINO'S MOTORCYCLES · más pan, más vino, más Sabino</p>
+        <a class="btn-primary mt-8" href="/motos">Explorar modelos</a>
+      </div>
+
+      <div class="relative order-3 h-[280px] overflow-hidden rounded-[2rem] border border-white/10 shadow-2xl shadow-black/40 md:h-[540px]">
+        <img class="h-full w-full object-cover object-center" src="/images/hero-moto.webp" alt="Motociclista de Sabino's MotorCycles en la ciudad" />
+        <div class="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-[#020812]/90"></div>
+        <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#020812]/80 to-transparent"></div>
+      </div>
+    </div>
+  </section>
+  <section class="bg-black py-16 text-white md:py-20">
+    <div class="container-power">
+      <div class="flex flex-wrap items-end justify-between gap-5">
+        <div>
+          <p class="font-display text-lg uppercase tracking-widest text-power-red">Sabino's MotorCycles</p>
+          <h2 class="text-5xl text-white md:text-6xl">Modelos destacados</h2>
+          <p class="mt-3 max-w-2xl text-gray-300">Tres modelos destacados para diferentes formas de recorrer el camino.</p>
+        </div>
+        <a class="btn-secondary border-white text-white hover:bg-white hover:text-black" href="/destacadas">Ver destacados</a>
+      </div>
+
+      <p id="home-featured-loading" class="py-10 text-gray-400">Cargando modelos destacados...</p>
+      <p id="home-featured-error" class="hidden rounded-lg bg-red-950 p-4 text-red-200" role="alert"></p>
+      <p id="home-featured-empty" class="hidden py-10 text-gray-400">No hay modelos destacados disponibles.</p>
+      <div id="home-featured-grid" class="mt-10 grid gap-6 md:grid-cols-3"></div>
+    </div>
+  </section>
+  <section class="bg-power-surface py-16">
+    <div class="container-power flex flex-wrap items-end justify-between gap-5">
+      <div><h2 class="text-5xl">Modelos para cada camino</h2><p class="text-gray-600">Consulta el catálogo conectado a nuestra API.</p></div>
+      <a class="btn-secondary" href="/motos">Ver todo el catálogo</a>
+    </div>
+  </section>
+</MainLayout>
+
+<script>
+  import { getMotos } from '../lib/api/motos.api'
+
+  const featuredModels = ['BROZZ-250', 'FOX RS-250', 'NXR-250']
+  const loading = document.querySelector('#home-featured-loading')
+  const error = document.querySelector('#home-featured-error')
+  const empty = document.querySelector('#home-featured-empty')
+  const grid = document.querySelector('#home-featured-grid')
+
+  try {
+    const result = await getMotos()
+    const featured = featuredModels
+      .map((model) => result.data.find((moto) => moto.modelo === model))
+      .filter((moto): moto is NonNullable<typeof moto> => Boolean(moto))
+
+    if (grid) {
+      grid.innerHTML = featured.map((moto) => `
+        <article class="overflow-hidden rounded-sm bg-gradient-to-br from-[#302e2c] to-[#121212] text-white shadow-card transition hover:-translate-y-1 hover:shadow-elevated">
+          <img class="aspect-[4/3] w-full object-contain p-2" src="${moto.imagenLink}" alt="${moto.modelo}" loading="lazy">
+          <div class="border-t-[3px] border-power-red p-6">
+            <p class="m-0 text-sm uppercase tracking-widest text-[#B5AFAA]">${moto.categoria}</p>
+            <h3 class="mt-2 font-display text-4xl text-white">${moto.modelo}</h3>
+            <p class="mt-5 mb-0 font-display text-5xl font-bold">Bs ${moto.precio.toLocaleString('es-BO')}</p>
+            <p class="m-0 text-sm text-[#B5AFAA]">Precio contado</p>
+          </div>
+        </article>
+      `).join('')
+    }
+
+    if (!featured.length) empty?.classList.remove('hidden')
+  } catch (exception) {
+    if (error) {
+      error.textContent = exception instanceof Error ? exception.message : 'No se pudieron cargar los modelos destacados'
+      error.classList.remove('hidden')
+    }
+  } finally {
+    loading?.classList.add('hidden')
+  }
+</script>

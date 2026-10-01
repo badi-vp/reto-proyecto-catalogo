@@ -1,0 +1,25 @@
+---
+const { moto } = Astro.props
+const isEdit = Boolean(moto)
+---
+<form id="moto-form" class="grid max-w-3xl gap-5 rounded-2xl bg-white p-6 shadow-card" data-id={moto?.identificador}>
+  <div class="grid gap-5 md:grid-cols-2">
+    <label class="grid gap-2 font-semibold">Modelo<input class="field" name="modelo" value={moto?.modelo} required /></label>
+    <label class="grid gap-2 font-semibold">Marca<input class="field bg-gray-100" name="marca" value="Power Motorcycle" readonly /></label>
+    <label class="grid gap-2 font-semibold">Categoría
+      <select class="field" name="categoria" required>
+        {['Automaticas', 'Aventura', 'Deportiva', 'Scoter', 'utilitarias'].map((categoria) => <option selected={moto?.categoria === categoria} value={categoria}>{categoria}</option>)}
+      </select>
+    </label>
+    <label class="grid gap-2 font-semibold">Cilindrada (cc)<input class="field" type="number" name="cilindrada" min="0" value={moto?.cilindrada} required /></label>
+    <label class="grid gap-2 font-semibold">Precio (Bs)<input class="field" type="number" name="precio" min="0" step="0.01" value={moto?.precio} required /></label>
+    <label class="grid gap-2 font-semibold">Stock<input class="field" type="number" name="stock" min="0" value={moto?.stock ?? 0} required /></label>
+  </div>
+  <label class="grid gap-2 font-semibold">URL de imagen<input class="field" type="url" name="imagenLink" value={moto?.imagenLink} required /></label>
+  <label class="grid gap-2 font-semibold">Descripción<textarea class="field min-h-32" name="descripcion" maxlength="500" required>{moto?.descripcion}</textarea></label>
+  <p id="form-error" class="hidden rounded-lg bg-red-50 p-3 text-sm text-red-800" role="alert"></p>
+  <div class="flex flex-wrap gap-3">
+    <button class="btn-primary" type="submit">{isEdit ? 'Guardar cambios' : 'Registrar moto'}</button>
+    <a class="btn-secondary" href="/admin">Cancelar</a>
+  </div>
+</form>

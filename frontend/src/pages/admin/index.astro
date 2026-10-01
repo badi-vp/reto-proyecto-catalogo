@@ -1,0 +1,29 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro'
+---
+<AdminLayout>
+  <section class="container-power py-14">
+    <div class="flex flex-wrap items-end justify-between gap-5"><div><p class="font-display text-lg uppercase tracking-widest text-power-deep">Administración</p><h1 class="text-6xl">Gestiona tu catálogo</h1></div><a class="btn-primary" href="/admin/motos/nueva">Registrar moto</a></div>
+    <div class="mt-10 grid gap-6 md:grid-cols-3">
+      <a class="rounded-2xl bg-black p-6 text-white shadow-card" href="/motos"><p class="text-gray-300">Catálogo público</p><p class="font-display text-4xl">Ver motos →</p></a>
+      <a class="rounded-2xl bg-power-red p-6 text-white shadow-card" href="/admin/motos/nueva"><p class="text-red-100">Gestión</p><p class="font-display text-4xl">Nueva moto →</p></a>
+      <div class="rounded-2xl bg-power-surface p-6 shadow-card"><p class="text-gray-600">Sesión activa</p><p id="session-user" class="font-display text-4xl"></p></div>
+    </div>
+    <div class="mt-12">
+      <div class="flex items-end justify-between gap-4"><h2 class="text-4xl">Motos registradas</h2><a class="font-semibold text-power-deep" href="/motos">Ver catálogo público</a></div>
+      <p id="admin-motos-error" class="hidden rounded-lg bg-red-50 p-4 text-red-800" role="alert"></p>
+      <div id="admin-motos" class="mt-5 grid gap-3"></div>
+    </div>
+  </section>
+</AdminLayout>
+<script>
+  import { getMotos } from '../../lib/api/motos.api'
+  import { getCurrentUser, isAuthenticated } from '../../lib/auth/storage'
+  if (!isAuthenticated()) window.location.href = '/login'
+  const user = document.querySelector('#session-user'); if (user) user.textContent = getCurrentUser() || 'Administrador'
+  const list = document.querySelector('#admin-motos'); const listError = document.querySelector('#admin-motos-error')
+  try {
+    const result = await getMotos()
+    if (list) list.innerHTML = result.data.map((moto) => `<div class="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm"><div><p class="m-0 font-display text-2xl font-bold">${moto.modelo}</p><p class="m-0 text-sm text-gray-600">${moto.categoria} · ${moto.stock} unidades · Precio contado: Bs ${moto.precio.toLocaleString('es-BO')}</p></div><a class="btn-secondary min-h-10 px-4 py-2 text-sm" href="/admin/motos/editar?id=${moto.identificador}">Editar</a></div>`).join('')
+  } catch (exception) { if (listError) { listError.textContent = exception instanceof Error ? exception.message : 'No se pudo cargar la administración'; listError.classList.remove('hidden') } }
+</script>

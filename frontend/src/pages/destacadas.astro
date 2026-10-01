@@ -1,0 +1,59 @@
+---
+import MainLayout from '../layouts/MainLayout.astro'
+---
+<MainLayout title="Modelos destacados · Sabino's MotorCycles">
+  <section class="bg-black py-16 text-white md:py-24">
+    <div class="container-power">
+      <p class="font-display text-lg uppercase tracking-widest text-power-red">Sabino's MotorCycles</p>
+      <h1 class="text-6xl text-white md:text-8xl">Modelos destacados</h1>
+      <p class="mt-5 max-w-2xl text-lg text-gray-300">Conoce tres modelos destacados para diferentes formas de recorrer el camino.</p>
+    </div>
+  </section>
+
+  <section class="container-power py-14">
+    <p id="featured-loading" class="py-10 text-gray-600">Cargando modelos destacados...</p>
+    <p id="featured-error" class="hidden rounded-lg bg-red-50 p-4 text-red-800" role="alert"></p>
+    <p id="featured-empty" class="hidden py-10 text-gray-600">No hay modelos destacados disponibles.</p>
+    <div id="featured-grid" class="grid gap-6 md:grid-cols-3"></div>
+  </section>
+</MainLayout>
+
+<script>
+  import { getMotos } from '../lib/api/motos.api'
+
+  const featuredModels = ['BROZZ-250', 'FOX RS-250', 'NXR-250']
+  const loading = document.querySelector('#featured-loading')
+  const error = document.querySelector('#featured-error')
+  const empty = document.querySelector('#featured-empty')
+  const grid = document.querySelector('#featured-grid')
+
+  try {
+    const result = await getMotos()
+    const featured = featuredModels
+      .map((model) => result.data.find((moto) => moto.modelo === model))
+      .filter((moto): moto is NonNullable<typeof moto> => Boolean(moto))
+
+    if (grid) {
+      grid.innerHTML = featured.map((moto) => `
+        <article class="overflow-hidden rounded-sm bg-gradient-to-br from-[#302e2c] to-[#121212] text-white shadow-card transition hover:-translate-y-1 hover:shadow-elevated">
+          <img class="aspect-[4/3] w-full object-contain p-2" src="${moto.imagenLink}" alt="${moto.modelo}" loading="lazy">
+          <div class="border-t-[3px] border-power-red p-6">
+            <p class="m-0 text-sm uppercase tracking-widest text-[#B5AFAA]">${moto.categoria}</p>
+            <h2 class="mt-2 font-display text-4xl text-white">${moto.modelo}</h2>
+            <p class="mt-5 mb-0 font-display text-5xl font-bold">Bs ${moto.precio.toLocaleString('es-BO')}</p>
+            <p class="m-0 text-sm text-[#B5AFAA]">Precio contado</p>
+          </div>
+        </article>
+      `).join('')
+    }
+
+    if (!featured.length) empty?.classList.remove('hidden')
+  } catch (exception) {
+    if (error) {
+      error.textContent = exception instanceof Error ? exception.message : 'No se pudieron cargar los modelos destacados'
+      error.classList.remove('hidden')
+    }
+  } finally {
+    loading?.classList.add('hidden')
+  }
+</script>

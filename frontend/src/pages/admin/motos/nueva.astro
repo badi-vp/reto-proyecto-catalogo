@@ -1,0 +1,15 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro'
+import MotoForm from '../../../components/motos/MotoForm.astro'
+---
+<AdminLayout>
+  <section class="container-power py-14"><p class="font-display text-lg uppercase tracking-widest text-power-deep">Catálogo</p><h1 class="text-6xl">Registrar moto</h1><MotoForm /></section>
+</AdminLayout>
+<script>
+  import { createMoto } from '../../../lib/api/motos.api'
+  import { motoSchema } from '../../../schemas/moto.schema'
+  import { isAuthenticated } from '../../../lib/auth/storage'
+  if (!isAuthenticated()) window.location.href = '/login'
+  const form = document.querySelector<HTMLFormElement>('#moto-form'); const error = document.querySelector('#form-error')
+  form?.addEventListener('submit', async (event) => { event.preventDefault(); error?.classList.add('hidden'); const data = Object.fromEntries(new FormData(form).entries()); const result = motoSchema.safeParse(data); if (!result.success) { error!.textContent = result.error.issues[0]?.message || 'Revisa los datos'; error?.classList.remove('hidden'); return } try { await createMoto(result.data); window.location.href = '/admin' } catch (exception) { error!.textContent = exception instanceof Error ? exception.message : 'No se pudo registrar'; error?.classList.remove('hidden') } })
+</script>

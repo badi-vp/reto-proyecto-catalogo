@@ -1,0 +1,35 @@
+---
+import MainLayout from '../layouts/MainLayout.astro'
+---
+<MainLayout title="Iniciar sesión · Sabino's MotorCycles">
+  <section class="grid min-h-[70vh] place-items-center bg-power-surface px-4 py-16">
+    <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-elevated">
+      <p class="font-display text-lg uppercase tracking-widest text-power-deep">Administración</p>
+      <h1 class="mt-2 text-5xl">Iniciar sesión</h1>
+      <p class="text-gray-600">Accede para gestionar el catálogo de motos.</p>
+      <form id="login-form" class="mt-8 grid gap-5">
+        <label class="grid gap-2 font-semibold">Usuario<input class="field" name="usuario" maxlength="15" autocomplete="username" required /></label>
+        <label class="grid gap-2 font-semibold">Contraseña<input class="field" name="contrasena" type="password" maxlength="60" autocomplete="current-password" required /></label>
+        <p id="login-error" class="hidden rounded-lg bg-red-50 p-3 text-sm text-red-800" role="alert"></p>
+        <button class="btn-primary" type="submit">Ingresar</button>
+      </form>
+    </div>
+  </section>
+</MainLayout>
+<script>
+  import { login } from '../lib/api/auth.api'
+  import { loginSchema } from '../schemas/auth.schema'
+  import { saveSession } from '../lib/auth/storage'
+  const form = document.querySelector<HTMLFormElement>('#login-form')
+  const error = document.querySelector('#login-error')
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault(); error?.classList.add('hidden')
+    const result = loginSchema.safeParse(Object.fromEntries(new FormData(form).entries()))
+    if (!result.success) { error!.textContent = result.error.issues[0]?.message || 'Revisa los datos'; error?.classList.remove('hidden'); return }
+    const button = form.querySelector('button') as HTMLButtonElement
+    button.disabled = true
+    try { const session = await login(result.data.usuario, result.data.contrasena); saveSession(session.token, session.usuario); window.location.href = '/admin' }
+    catch (exception) { error!.textContent = exception instanceof Error ? exception.message : 'No se pudo iniciar sesión'; error?.classList.remove('hidden') }
+    finally { button.disabled = false }
+  })
+</script>

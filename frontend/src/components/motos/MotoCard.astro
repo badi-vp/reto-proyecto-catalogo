@@ -1,0 +1,14 @@
+---
+import type { Moto } from '../../types/moto'
+const { moto } = Astro.props as { moto: Moto }
+---
+<article class="overflow-hidden rounded-sm bg-gradient-to-br from-[#302e2c] to-[#121212] text-white shadow-card transition hover:-translate-y-1 hover:shadow-elevated">
+  <img class="aspect-[4/3] w-full object-contain p-2" src={moto.imagenLink} alt={moto.modelo} loading="lazy" />
+  <div class="border-t-[3px] border-power-red p-5">
+    <h2 class="m-0 text-3xl text-white">{moto.modelo}</h2>
+    <p class="m-0 text-sm text-[#9A948F]">{moto.categoria} · {moto.cilindrada} cc</p>
+    <p class="mt-4 font-display text-5xl font-bold">Bs {moto.precio.toLocaleString('es-BO')}</p>
+    <p class="m-0 text-xs text-[#B5AFAA]">Precio contado</p>
+    <p class="m-0 text-sm text-[#B5AFAA]">Stock: {moto.stock}</p>
+  </div>
+</article>
